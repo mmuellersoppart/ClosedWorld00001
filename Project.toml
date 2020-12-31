@@ -1,0 +1,10 @@
+[deps]
+Example = "7876af07-990d-54b4-ab0e-23690620f79a"
+FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
+FixedPointNumbers = "53c48c17-4a7d-5ca2-90c5-79b7896eea93"
+ImageIO = "82e4d734-157c-48bb-816b-45c225c6df19"
+ImageInTerminal = "d8c32880-2388-543b-8c61-d9f865259254"
+ImageMagick = "6218d12a-5da1-5696-b52f-db25d2ecc6d1"
+Images = "916415d5-f1e6-5110-898d-aaa5f9f070e0"
+Pluto = "c3e4b0f8-55cb-11ea-2926-15256bba5781"
+TestImages = "5e47fb64-e119-507b-a336-dd2b206d9990"
