@@ -1,49 +1,106 @@
-using Images, FileIO, ImageInTerminal
-
-function resizeto100(img)
-        (h, w) = size(img)
-    hstep = Int(100/h * h)
-        wstep = Int(100/w * w)
-
-        img_small = copy(img)
-        return img_small[1:hstep:h, 1:wstep:w]
-end
 
 
-println("Welcome to Closed World #00001")
+module closedworld
+	using Images, FileIO, ImageInTerminal
+	
+	export runworld
 
-#get path of the world
-worldpath = ""
-worldpath = begin
-	files = readdir("./world", join=true)
-	isempty(files) && throw(ErrorException("ERROR: put a world (img) in the world folder."))
-	files[1]
-end
+	function runworld(epochs)
+		
+		# get world
+		worldpath = ""
+		worldpath = begin
+				files = readdir("./world", join=true)
+				isempty(files) && throw(ErrorException("ERROR: put a world (img) in the world folder."))
+				if files[1] == "./world/.DS_Store"
+					files[2]
+				else
+					files[1]
+				end
+		end
 
-println("We found a world at $worldpath")
+		# delete old output
+		outputpath = mkpath("./output/");
+		rm(outputpath, recursive=true, force=true);
+	
+		# load new world and place in output folder
+		world = load(worldpath);
+		save("./output/0.png", world);
+		(worldh, worldw) = size(world)
+		
+		specieslist = begin
+			allpixels = world[:];
+			function uniquecolors(arr)
+					colorsfound = []
+					for p in arr
+							if p ∉ colorsfound
+									push!(colorsfound, p)
+							end
+					end
+					colorsfound
+			end
+			uniquecolors(allpixels)
+		end
 
-#load in image
-world = load(worldpath)
-smallworld = resizeto100(world)
+		numspecies = length(specieslist)
 
-println("Here's how it looks.")
+		foodchain = collect(1:numspecies)
+		foodchaindict = Dict([specieslist[speciesid] => speciesid for speciesid in 1:numspecies])
 
+		function getpredator(species, specieslist, foodchaindict)
+			speciesid = foodchaindict[species]
+			predatorid = speciesid + 1
+			if predatorid > length(specieslist)
+				specieslist[1]
+			else
+				specieslist[predatorid]
+			end
+		end
 
-#make image to linear array
-allpixels = world[:];
-
-function uniquecolors(arr)
-	colorsfound = []
-	for p in arr
-		if p ∉ colorsfound
-			push!(colorsfound, p)
+		function ispredatornearby(world, predator, ih, iw) 
+			left = if (iw - 1 == 0) Tuple([ih, worldw]) else Tuple([ih, iw - 1]) end
+			right = if (iw + 1 > worldw) Tuple([ih, 1]) else Tuple([ih, iw + 1]) end
+			
+			up = if (ih - 1 == 0) Tuple([worldh, iw]) else Tuple([ih - 1, iw]) end
+			down = if (ih + 1 > worldh) Tuple([1, iw]) else Tuple([ih + 1, iw]) end
+			
+			for loc in [left, right, up, down]
+				if world[loc[1], loc[2]] == predator
+					return true
+				end
+			end
+			
+			false
+		end
+		
+		numberofiterations = epochs
+		for i in 1:numberofiterations
+	
+			oldworldfilename = string(i - 1) * ".png"
+			newworldfilename = string(i) * ".png"
+			basepath = "./output/"
+			
+			#load previous world
+			oldworld = world
+			
+			#operations
+			newworld = copy(oldworld)
+			
+			for ih in 1:worldh
+				for iw in 1:worldw
+					currspecies = oldworld[ih, iw]
+					predator = getpredator(currspecies, specieslist, foodchaindict)
+					if ispredatornearby(oldworld, predator, ih, iw) 
+						newworld[ih, iw] = predator
+					end
+				end
+			end
+			
+			#save new world
+			save(basepath * newworldfilename, newworld)
+			world = newworld
 		end
 	end
-	colorsfound
 end
 
-#determine the species on the planet
-println("Here are species we've found")
-uniquecolors(allpixels)
 
-5
