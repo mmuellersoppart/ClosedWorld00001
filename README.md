@@ -33,3 +33,5 @@ pkg> activate .
 3. from Pluto, open closedworld00001pluto.jl
 
 After the instructions, a folder named output should appear with the state of the world for each iteration. 
+
+<img src=https://github.com/mmuellersoppart/ClosedWorld00001/blob/main/closedWorld00001_1_1.gif>
